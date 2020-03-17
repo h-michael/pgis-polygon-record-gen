@@ -30,8 +30,8 @@ func main() {
 }
 
 type LatLon struct {
-	Lat int
-	Lon int
+	Lat float32
+	Lon float32
 }
 
 func buildInsertStatement() {
@@ -47,25 +47,47 @@ func buildInsertStatement() {
 }
 
 func buildRecordValue() {
-	ll1 := buildRandomLatLon()
-	ll2 := buildRandomLatLon()
-	ll3 := buildRandomLatLon()
-	ll4 := buildRandomLatLon()
-	fmt.Printf("\t(ST_PolygonFromText('POLYGON((%d %d, %d %d, %d %d, %d %d, %d %d))', 4326))", ll1.Lat, ll1.Lon, ll2.Lat, ll2.Lon, ll3.Lat, ll3.Lon, ll4.Lat, ll4.Lon, ll1.Lat, ll1.Lon)
+	ll1, ll2, ll3, ll4 := buildFourPoints()
+	fmt.Printf("\t(ST_PolygonFromText('POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))', 4326))", ll1.Lat, ll1.Lon, ll2.Lat, ll2.Lon, ll3.Lat, ll3.Lon, ll4.Lat, ll4.Lon, ll1.Lat, ll1.Lon)
 }
 
-func buildRandomLatLon() LatLon {
+func buildFourPoints() (LatLon, LatLon, LatLon, LatLon) {
+	ll1 := buildBaseRandomLatLon()
+	offset := randomOffset()
+	ll2 := LatLon{
+		Lat: ll1.Lat + offset,
+		Lon: ll1.Lon,
+	}
+
+	ll3 := LatLon{
+		Lat: ll1.Lat + offset,
+		Lon: ll1.Lon + offset,
+	}
+
+	ll4 := LatLon{
+		Lat: ll1.Lat,
+		Lon: ll1.Lon + offset,
+	}
+
+	return ll1, ll2, ll3, ll4
+}
+
+func buildBaseRandomLatLon() LatLon {
 	return LatLon{
-		Lat: randomInvert(random(0, 90)),
-		Lon: randomInvert(random(0, 180)),
+		Lat: randomInvert(random(0, 89)),
+		Lon: randomInvert(random(0, 179)),
 	}
 }
 
-func random(min, max int) int {
-	return rand.Intn(max-min) + min
+func randomOffset() float32 {
+	return random(1, 999) / 1000
 }
 
-func randomInvert(target int) int {
+func random(min, max int) float32 {
+	return float32(rand.Intn(max-min) + min)
+}
+
+func randomInvert(target float32) float32 {
 	if (rand.Intn(2) % 2) == 0 {
 		return target
 	} else {
